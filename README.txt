@@ -1,0 +1,7 @@
+ide: spyder 
+x10__________________________________________________________________________________________
+https://www.youtube.com/watch?v=afPJeQuVeuY&t=6283s
+x11__________________________________________________________________________________________
+https://www.codedex.io/projects/analyze-baseball-stats-with-pandas-and-matplotlib
+x12__________________________________________________________________________________________
+https://www.kaggle.com/code/abhishek0032/indian-athletes-marathon-insights-triumph
