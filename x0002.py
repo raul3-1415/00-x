@@ -62,11 +62,13 @@ g2=df_1.groupby(['month','mon name'])['value'].agg(['mean','sum']).reset_index()
 df_1.info()
 
 #   df_1
-fig=px.line(g2[g2['mon name']!='Ene'],x='mon name',y='sum',title='Totales por mes',markers=True)
-fig.update_traces(line=dict(color='lightgreen'))
-fig.update_layout(xaxis_title='MES',yaxis_title='INGRESO'
-                  ,template='plotly_dark',hovermode='x unified')
-fig.show()
+# =============================================================================
+# fig=px.line(g2[g2['mon name']!='Ene'],x='mon name',y='sum',title='Totales por mes',markers=True)
+# fig.update_traces(line=dict(color='lightgreen'))
+# fig.update_layout(xaxis_title='MES',yaxis_title='INGRESO'
+#                   ,template='plotly_dark',hovermode='x unified')
+# fig.show()
+# =============================================================================
 
 #   PAGE________________
 
