@@ -63,25 +63,25 @@ fig1=px.bar(g2,x='day name',y='sum',title='DIAS',text_auto=',.0f'
             ,orientation='v')
 fig1.update_layout(xaxis_title='dia',yaxis_title='INGRESO'
                   ,template='plotly_dark',hovermode='x unified')
-fig1.show()
+# fig1.show()
 
 #   f2.p1:
 fig2=px.pie(g2,names='type',values='sum',hole=.5)
 fig2.update_traces(textposition='outside',textinfo='value+percent')
 fig2.update_layout(template='plotly_dark')
-fig2.show()
+# fig2.show()
 
 #   f3.p2:
 fig3=px.pie(g2,names='ubi',values='sum',hole=.5)
 fig3.update_traces(textposition='outside',textinfo='value+percent')
 fig3.update_layout(template='plotly_dark')
-fig3.show()
+# fig3.show()
 
 #   f3.ba2
 fig4=px.bar(g3,x='sum',y='name',text_auto=',.0f',orientation='h'
             ,color='type',color_discrete_map={'DIA':'lightblue','NOCHE':'navy'})
 fig4.update_layout(template='plotly_dark')
-fig4.show()
+# fig4.show()
 
 
 
