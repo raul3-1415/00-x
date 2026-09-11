@@ -17,6 +17,14 @@ def exp_data(path):
 df= exp_data(url)
 # PREPARED______________________
 # df=df.drop(columns=['TOT'])
+
+df=df.rename(columns={
+    'DIEGO-DIA':'D-D'})
+
+df['D-D']=pd.to_numeric(df['D-D'],errors='coerce')
+df['DIEGO-DIA']=df['D-D']+100
+df=df.drop(columns=['D-D'])
+
 df=df.replace('-',0).fillna(0)
 df=df.melt(id_vars=['FECHA','nWK','DIA'],
              var_name='name-type',
@@ -43,6 +51,9 @@ df['ubi']=df['name'].apply(lambda x: 'San juan'if x=='RAUL'
                            else 'Miraflores')
 
 df['week']=df['date'].dt.isocalendar().week
+
+
+
 # ________________________________________________
 #   EDA:1
 
@@ -57,7 +68,7 @@ g3=df1.groupby(['type','name','day name'])['value'].agg(['mean','sum']).reset_in
 
 
 #   fig#.type.#______________________________
-#   f1.ba1:
+#   ___
 fig1=px.bar(g2,x='day name',y='sum',title='DIAS',text_auto=',.0f'
             ,color='type',color_discrete_map={'DIA':'lightblue','NOCHE':'navy'}
             ,orientation='v')
@@ -65,23 +76,41 @@ fig1.update_layout(xaxis_title='dia',yaxis_title='INGRESO'
                   ,template='plotly_dark',hovermode='x unified')
 # fig1.show()
 
-#   f2.p1:
+#   ___
 fig2=px.pie(g2,names='type',values='sum',hole=.5)
 fig2.update_traces(textposition='outside',textinfo='value+percent')
 fig2.update_layout(template='plotly_dark')
 # fig2.show()
 
-#   f3.p2:
+#   ___
 fig3=px.pie(g2,names='ubi',values='sum',hole=.5)
 fig3.update_traces(textposition='outside',textinfo='value+percent')
 fig3.update_layout(template='plotly_dark')
 # fig3.show()
 
-#   f3.ba2
+#   ___
 fig4=px.bar(g3,x='sum',y='name',text_auto=',.0f',orientation='h'
             ,color='type',color_discrete_map={'DIA':'lightblue','NOCHE':'navy'})
 fig4.update_layout(template='plotly_dark')
 # fig4.show()
+#   ___
+g4=df1[df1['type']=='DIA'].groupby(['type','name','day','day name'])\
+    ['value'].agg(['sum']).reset_index()
+# 
+fig5=px.line(g4,x='day name',y='sum',markers=True,color='name'
+             ,color_discrete_map={'RAUL':'lightgreen','ARTURO':'red'
+                                  ,'DIEGO':'yellow','MIRKO':'white'})
+fig5.update_layout(template='plotly_dark')
+# fig5.show()
+# 
+g5=df1[df1['type']=='NOCHE'].groupby(['type','name','day','day name'])\
+    ['value'].agg(['sum']).reset_index()
+
+fig6=px.line(g5,x='day name',y='sum',markers=True,color='name'
+             ,color_discrete_map={'RAUL':'lightgreen','ARTURO':'red'
+                                  ,'DIEGO':'yellow','MIRKO':'lightblue'})
+fig6.update_layout(template='plotly_dark')
+# fig6.show()
 
 
 
@@ -105,19 +134,28 @@ st.set_page_config(page_title='ƒ(±x)',layout='wide'
                    ,initial_sidebar_state='collapsed')
 def main():
 
-    # st.sidebar.header('MÁS')
+    # actual week:aw
+    aw=datetime.today().isocalendar()[1]
     
-    # 
+    
     st.sidebar.header('Filtros')
     
     week_list= ['Todos']+list(df1['week'].unique())
     name_list = ['Todos']+list(df1['name'].unique())
-    # mon_list = ['Todos']+list(df1['mon name'].unique())
+    type_list=['Todos']+list(df1['type'].unique())
     
+    try:
+        iw=week_list.index(aw) #index week:iw
+    except ValueError:
+        iw=0
     
-    week_sel=st.sidebar.selectbox('N° Semana', week_list)
+    week_sel=st.sidebar.selectbox('N° Semana', week_list,index=iw)
     name_sel= st.sidebar.selectbox('Nombre', name_list)
-    # mon_sel= st.sidebar.selectbox('Mes', mon_list)
+    type_sel=st.sidebar.selectbox('Turno',type_list)
+    
+    st.title(f'Semana actual: {aw}')
+    st.subheader(f'Semana elegida: {week_sel}')
+    
     
     
     df_fil=df1.copy()
@@ -125,42 +163,71 @@ def main():
         df_fil = df_fil[df_fil['week'] == week_sel]
     if name_sel != 'Todos':
         df_fil = df_fil[df_fil['name'] == name_sel]
-# =============================================================================
-#     if mon_sel != 'Todos':
-#         df_fil = df_fil[df_fil['mon name'] == mon_sel]
-# =============================================================================
-        
-    
-    # 
-    # df_fil = df1[(df1['name'] == name_sel) & (df1['week'] == week_sel)]
-    
-    g2=df_fil.groupby(['week','ubi','type','day','day name'])['value'].agg(['mean','sum']).reset_index()
-    g3=df_fil.groupby(['name','type'])['value'].agg(['mean','sum']).reset_index()
-    
-    # 
+    if type_sel!='Todos':
+        df_fil=df_fil[df_fil['type']==type_sel]
+
+    # ___|font size
     sn=16
-    #   f1.ba1:
-    fig1=px.bar(g2,x='day name',y='sum',title=f'Yape: {name_sel}',text_auto=',.0f'
+    # ___|graphs
+    #
+    g1=df_fil.groupby(['day','day name','type'])['value']\
+        .agg(['sum','mean']).reset_index()
+        
+    fig1=px.bar(g1,x='day name',y='sum',text_auto=',.0f'
+                ,title='DIAS'
                 ,color='type',color_discrete_map={'DIA':'lightblue','NOCHE':'navy'}
                 ,orientation='v')
-    fig1.update_layout(xaxis_title='dia',yaxis_title='INGRESO'
-                      ,template='plotly_dark',hovermode='x unified'
-                      ,font=dict(size=sn))
-    #   f2.p1:
-    fig2=px.pie(g2,names='type',values='sum',hole=.5)
+    fig1.update_layout(hovermode='x unified',font=dict(size=sn)
+                       ,xaxis_title=None,yaxis_title=None)
+    #   ___
+    g2=df_fil.groupby(['type'])['value'].agg(['sum']).reset_index()
+    
+    fig2=px.pie(g2,names='type',values='sum',hole=.5,title='TURNO')
     fig2.update_traces(textposition='outside',textinfo='value+percent')
-    fig2.update_layout(template='plotly_dark',font=dict(size=sn)
+    fig2.update_layout(font=dict(size=sn)
                        ,height=200,margin=dict(t=30, b=30, l=10, r=10))
-    # f3.p2:
-    fig3=px.pie(g2,names='ubi',values='sum',hole=.5)
+    #   ___
+    g3=df_fil.groupby(['ubi'])['value'].agg(['sum']).reset_index()
+    
+    fig3=px.pie(g3,names='ubi',values='sum',hole=.5,title='UBICACION')
     fig3.update_traces(textposition='outside',textinfo='value+percent')
-    fig3.update_layout(template='plotly_dark',font=dict(size=sn)
+    fig3.update_layout(font=dict(size=sn)
                        ,height=200,margin=dict(t=30, b=30, l=10, r=10))
-    #   f3.ba2
-    fig4=px.bar(g3,x='sum',y='name',text_auto=',.0f',orientation='h'
+    #   ___
+    g4=df_fil.groupby(['name','type'])['value'].agg(['sum']).reset_index()
+    
+    fig4=px.bar(g4,x='sum',y='name',text_auto=',.0f',orientation='h'
+                ,title='USUARIOS'
                 ,color='type',color_discrete_map={'DIA':'lightblue','NOCHE':'navy'})
-    fig4.update_layout(template='plotly_dark',font=dict(size=sn))
-    #   pivot table_________ 
+    fig4.update_layout(hovermode='x unified',font=dict(size=sn)
+                       ,xaxis_title=None,yaxis_title=None)
+    #   ___
+    g5=df_fil[df_fil['type']=='DIA'].groupby(['type','name','day','day name'])\
+        ['value'].agg(['sum']).reset_index()
+    
+    fig5=px.line(g5,x='day name',y='sum',markers=True,text='sum'
+                 ,title='TURNO: DIA',color='name'
+                 ,color_discrete_map={'RAUL':'lightgreen','ARTURO':'red'
+                                      ,'DIEGO':'yellow','MIRKO':'white'})
+    fig5.update_traces(textposition='top center',texttemplate='%{text:,.0f}'
+                       ,textfont=dict(size=11))
+    fig5.update_layout(hovermode='x unified',xaxis_title=None,yaxis_title=None)
+    
+    # 
+    g6=df_fil[df_fil['type']=='NOCHE'].groupby(['type','name','day','day name'])\
+        ['value'].agg(['sum']).reset_index()
+        
+    fig6=px.line(g6,x='day name',y='sum',markers=True,text='sum'
+                 ,title='TURNO: NOCHE',color='name'
+                 ,color_discrete_map={'RAUL':'lightgreen','ARTURO':'red'
+                                      ,'DIEGO':'yellow','MIRKO':'lightblue'})
+    fig6.update_traces(textposition='top center',texttemplate='%{text:,.0f}'
+                       ,textfont=dict(size=11))
+    fig6.update_layout(hovermode='x unified',xaxis_title=None,yaxis_title=None)
+    
+     
+    
+    #   ___|pivot table
     #       table matrix:tmt
     tmt=pd.pivot_table(data=df_fil,values='value',index=['type','name']
                        ,columns='day name',aggfunc='sum')
@@ -169,26 +236,45 @@ def main():
     cols_in = [dia for dia in od if dia in tmt.columns]
     tmt= tmt[cols_in]
     
-    # DISTRIBUTION__________________________
-    col1, col2 = st.columns(2)
-    with col1:
-        st.plotly_chart(fig2, use_container_width=True)
-    with col2:
-        st.plotly_chart(fig3, use_container_width=True)
+    # ___|distribution page
+    c1, c2 = st.columns(2)
+    with c1:
+        st.plotly_chart(fig5, use_container_width=True)
+    with c2:
+        st.plotly_chart(fig6, use_container_width=True)
     # 
     st.divider()
-    st.plotly_chart(fig1, use_container_width=True)
+    st.dataframe(tmt.style.format('{:,.0f}')
+                 ,use_container_width=True)
     # 
     st.divider()
-    col3,col4=st.columns(2)
-    with col3:
+    c3,c4=st.columns(2)
+    with c3:
         st.plotly_chart(fig4, use_container_width=True)
-    with col4:
-        st.dataframe(tmt.style.format('{:,.0f}')
-                     ,use_container_width=True)
+    with c4:
+        st.plotly_chart(fig1)
+    # 
+    st.divider()
+    c5,c6=st.columns(2)
+    with c5:
+        st.plotly_chart(fig2)
+    with c6:
+        st.plotly_chart(fig3)
     
 if __name__=='__main__':
     main()
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
