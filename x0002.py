@@ -30,6 +30,9 @@ turn_col={
 ubi_col={
     'San Juan':'navy'
     ,'Miraflores':'lightblue'}
+wk_col={
+        'value':'lightgreen'
+        ,'media movil':'silver'}
 
 @st.cache_data(ttl=3600)
 
@@ -230,16 +233,6 @@ def main():
         fig4.update_traces(textposition='outside',textinfo='value+percent')
         fig4.update_layout(font=dict(size=sn))
         
-        # PARTICIPATION PER USER   
-        g5=dff.groupby(['name'],as_index=False)['value'].sum()\
-            .sort_values('value',ascending=False)
-        g5['part']=g5['value']/g5['value'].sum()*100
-            
-        dg5=g5.copy()
-        
-        dg5['value']=dg5['value'].map(money)
-        dg5['part']=dg5['part'].map(lambda x:f'{x:.0f}%')
-                
         # 
         with c1:
             st.plotly_chart(fig1,use_container_width=True)
@@ -252,10 +245,6 @@ def main():
             st.plotly_chart(fig3,use_container_width=True)
         with c4:
             st.plotly_chart(fig4,use_container_width=True)
-       
-        st.divider()
-        st.subheader('USUARIO-PARTICIPACION')
-        st.dataframe(dg5,use_container_width=True,hide_index=True)
         
 # =============================================================================
 #     TAB-2: USER
@@ -307,8 +296,37 @@ def main():
 # =============================================================================
 #     TAB-3: STATS
 # =============================================================================
-   
-         
+    
+    with t3:
+        # LINE OF MEAN AND REAL VALUE
+        wk=weekly_tot(dfb)
+        wk['media movil']=wk['value'].rolling(4,min_periods=1).mean()
+        wk['week_label']=wk['week'].apply(lambda x:f'S{x}')
+        
+        fig8=px.line(wk,x='week_label',y=['value','media movil'],markers=True
+                     ,color_discrete_map=wk_col
+                     ,title='Evolucion semanal:  valor actual vs valor promedio')
+        fig8.update_layout(hovermode='x unified',
+                           xaxis_title=None,yaxis_title=None)
+        
+        # PARTICIPATION PER USER   
+        g5=dff.groupby(['name'],as_index=False)['value'].sum()\
+            .sort_values('value',ascending=False)
+        g5['part']=g5['value']/g5['value'].sum()*100
+            
+        dg5=g5.copy()
+        
+        dg5['value']=dg5['value'].map(money)
+        dg5['part']=dg5['part'].map(lambda x:f'{x:.0f}%')
+        
+        # 
+        st.plotly_chart(fig8,use_container_width=True)
+        st.divider()
+        st.subheader('USUARIO-PARTICIPACION')
+        st.dataframe(dg5,use_container_width=True,hide_index=True)
+
+        
+        
 # 
 # 
 if __name__=='__main__':
