@@ -252,7 +252,7 @@ def main():
     
     with t2:
         # TYPE:DIA
-        g6=dff[dff['type']=='DIA'].groupby(['type','name','day name']
+        g6=dff[dff['type']=='DIA'].groupby(['type','name','day','day name']
                                            ,as_index=False)['value'].agg(['sum'])
         
         fig6=px.line(g6,x='day name',y='sum',markers=True,text='sum'
@@ -263,7 +263,7 @@ def main():
         fig6.update_layout(hovermode='x unified',xaxis_title=None,yaxis_title=None)
         
         # TYPE:NOCHE
-        g7=dff[dff['type']=='NOCHE'].groupby(['type','name','day name']
+        g7=dff[dff['type']=='NOCHE'].groupby(['type','name','day','day name']
                                              ,as_index=False)['value'].agg(['sum'])
         
         fig7=px.line(g7,x='day name',y='sum',markers=True,text='sum'
