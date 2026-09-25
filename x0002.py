@@ -170,7 +170,7 @@ def main():
     type_sel=st.sidebar.selectbox('TURNO',type_list)
     
     st.sidebar.divider()
-    st.sidebar.caption(f'_________Raúl el crack_________')
+    st.sidebar.caption(f'_________Raúl el poderoso_________')
     
     st.subheader(f'Semana elegida: N°{week_sel}')
     
